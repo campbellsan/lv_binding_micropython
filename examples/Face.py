@@ -1,7 +1,10 @@
 in_sim = False
 try:
     import display_driver
-
+    from display_driver_utils import driver
+    width = 480
+    height = 320
+    drv = driver(width, height)
     in_sim = True
 except ImportError:
     pass
