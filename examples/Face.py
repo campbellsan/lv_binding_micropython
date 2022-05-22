@@ -1,3 +1,12 @@
+in_sim = False
+try:
+    import display_driver
+
+    in_sim = True
+except ImportError:
+    pass
+
+
 ##############################################################################
 # LVGL Face Widget
 ##############################################################################
@@ -29,11 +38,13 @@ class FacePart:
     FACE_SUBCARDINAL = 3
     FACE_DIVISION = 4
 
+
 ##############################################################################
 # Initializations
 ##############################################################################
 
 import usys as sys
+
 sys.path.append('')  # See: https://github.com/micropython/micropython/issues/6419
 
 import lvgl as lv
@@ -82,9 +93,9 @@ class FaceClass():
         self.lv_cls.height_def = int(height)
         self.lv_cls.group_def = lv.obj.CLASS_GROUP_DEF.TRUE
         self.lv_cls.base_class = lv.obj_class
-        self.div_rad = width//2
-        self.sub_card_rad = width//2
-        self.cardinal_rad = (width//2) - 5
+        self.div_rad = width // 2
+        self.sub_card_rad = width // 2
+        self.cardinal_rad = (width // 2) - 5
         self.outer_dial_rad = 0
         self.inner_dial_rad = 0
         self.digit_rad = 0
@@ -116,7 +127,7 @@ class FaceClass():
         obj.add_flag(obj.FLAG.CLICKABLE);
         obj.add_flag(obj.FLAG.CHECKABLE);
         obj.add_flag(obj.FLAG.SCROLL_ON_FOCUS);
-        #print("Constructor called!")
+        # print("Constructor called!")
 
     def destructor(self, lv_cls, obj):
         pass
@@ -130,7 +141,7 @@ class FaceClass():
         code = e.get_code()
         obj = e.get_target()
 
-        #print("Event %s" % get_member_name(lv.EVENT, code))
+        # print("Event %s" % get_member_name(lv.EVENT, code))
 
         if code == lv.EVENT.DRAW_MAIN:
             # Draw the widget
@@ -172,7 +183,7 @@ class FaceClass():
             self.calc(obj)
 
         # Draw the custom widget
-        #draw_ctx.polygon(obj.draw_desc, obj.points, len(obj.points))
+        # draw_ctx.polygon(obj.draw_desc, obj.points, len(obj.points))
         draw_desc = lv.draw_line_dsc_t()
         draw_desc.init()
         draw_desc.opa = lv.OPA.COVER;
@@ -189,8 +200,8 @@ class FaceClass():
     HOURS = 12
 
     def set_coords(self, obj):
-        x = obj.get_x() + int(self.lv_cls.width_def//2)
-        y = obj.get_y() + int(self.lv_cls.height_def//2)
+        x = obj.get_x() + int(self.lv_cls.width_def // 2)
+        y = obj.get_y() + int(self.lv_cls.height_def // 2)
         rotation = 0
         for i in range(FaceClass.CARDINALS):
             self.card_points.append([
@@ -198,7 +209,7 @@ class FaceClass():
                  'y': y + int(math.cos(math.radians(rotation)) * self.cardinal_rad)},
                 {'x': x + int(math.sin(math.radians(rotation)) * (self.cardinal_rad - self.cardinal_len)),
                  'y': y + int(math.cos(math.radians(rotation)) * (self.cardinal_rad - self.cardinal_len))},
-                ])
+            ])
             rotation += 90
         rotation = 0
         for i in range(FaceClass.HOURS):
@@ -209,8 +220,9 @@ class FaceClass():
                  'y': y + int(math.cos(math.radians(rotation)) * self.sub_card_rad)},
                 {'x': x + int(math.sin(math.radians(rotation)) * (self.sub_card_rad - self.sub_card_len)),
                  'y': y + int(math.cos(math.radians(rotation)) * (self.sub_card_rad - self.sub_card_len))},
-                ])
-            
+            ])
+
+
 ##############################################################################
 # A Python class to wrap the LVGL custom widget
 ##############################################################################
@@ -244,7 +256,7 @@ class Face():
 
         def __getattr__(self, attr):
             # Provide access to LVGL object functions
-            #print("__getattr__(%s, %s)" % (repr(self), repr(attr)))
+            # print("__getattr__(%s, %s)" % (repr(self), repr(attr)))
             return getattr(self.lv_obj, attr)
 
         def __repr__(self):
@@ -305,33 +317,36 @@ class FaceTheme(lv.theme_t):
 ##############################################################################
 # Main program - create screen and widgets
 ##############################################################################
-import ili9486, time, ts
+if in_sim:
+    import utime as time
+else:
+    import ili9486, time, ts
 
-# Create a display and driver
-display = ili9486.display(wr=14, rd=12, rst=13, cs=27, dc=28, d0=15, backlight=11)
-display.init()
-draw_buf = lv.disp_draw_buf_t()
-buf1_1 = bytearray(480*32)
-buf1_2 = bytearray(480*32)
-size = len(buf1_1)//2
-draw_buf.init(buf1_1, buf1_2, size)
-disp_drv = lv.disp_drv_t()
-disp_drv.init()
-disp_drv.draw_buf = draw_buf
-disp_drv.flush_cb = display.flush
-disp_drv.hor_res = 320
-disp_drv.ver_res = 480
-disp_drv.rotated = True
-disp_drv.register()
-# Create a touch screen and driver
-touch = ts.Ts(15, 28, 27, 16, 320, 480, busy_cb=display.busy)
-touch.calibrate(x_scale=0.12, y_scale=0.145, x_offset=760, y_offset=450, sensitivity=58000)
-touch.invert_y()
-indev_drv = lv.indev_drv_t()
-indev_drv.init()
-indev_drv.type = lv.INDEV_TYPE.POINTER
-indev_drv.read_cb = touch.callback
-indev_drv.register()
+    # Create a display and driver
+    display = ili9486.display(wr=14, rd=12, rst=13, cs=27, dc=28, d0=15, backlight=11)
+    display.init()
+    draw_buf = lv.disp_draw_buf_t()
+    buf1_1 = bytearray(480 * 32)
+    buf1_2 = bytearray(480 * 32)
+    size = len(buf1_1) // 2
+    draw_buf.init(buf1_1, buf1_2, size)
+    disp_drv = lv.disp_drv_t()
+    disp_drv.init()
+    disp_drv.draw_buf = draw_buf
+    disp_drv.flush_cb = display.flush
+    disp_drv.hor_res = 320
+    disp_drv.ver_res = 480
+    disp_drv.rotated = True
+    disp_drv.register()
+    # Create a touch screen and driver
+    touch = ts.Ts(15, 28, 27, 16, 320, 480, busy_cb=display.busy)
+    touch.calibrate(x_scale=0.12, y_scale=0.145, x_offset=760, y_offset=450, sensitivity=58000)
+    touch.invert_y()
+    indev_drv = lv.indev_drv_t()
+    indev_drv.init()
+    indev_drv.type = lv.INDEV_TYPE.POINTER
+    indev_drv.read_cb = touch.callback
+    indev_drv.register()
 
 # Create the theme for the custom widget
 theme = FaceTheme()
@@ -343,9 +358,11 @@ scr.set_flex_align(lv.FLEX_ALIGN.SPACE_EVENLY, lv.FLEX_ALIGN.CENTER, lv.FLEX_ALI
 
 # Add a custom widget with a label
 customWidget = Face(scr)
-#l2 = lv.label(customWidget)
-#l2.set_text("Click me!")
-    
+
+
+# l2 = lv.label(customWidget)
+# l2.set_text("Click me!")
+
 # Add click events to both button and custom widget
 def event_cb(e):
     print("%s Clicked!" % repr(e.get_target()))
