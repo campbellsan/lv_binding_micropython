@@ -371,8 +371,9 @@ def event_cb(e):
 for widget in [customWidget]:
     widget.add_event_cb(event_cb, lv.EVENT.CLICKED, None)
 
-while True:
-    touch.read()
-    lv.task_handler()
-    lv.tick_inc(50)
-    time.sleep_ms(50)
+if not in_sim:
+    while True:
+        touch.read()
+        lv.task_handler()
+        lv.tick_inc(50)
+        time.sleep_ms(50)
