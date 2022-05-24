@@ -53,7 +53,7 @@ class Hand():
         self.flag = [{'x': 0, 'y': 0}, {'x': 0, 'y': 0}]
 
     def draw(self, obj, draw_ctx, rotate_by):
-        self.rotate(rotate_by)
+        self.rotate(rotate_by+180)
         draw_desc = lv.draw_line_dsc_t()
         draw_desc.init()
         draw_desc.opa = lv.OPA.COVER;
