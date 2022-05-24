@@ -58,12 +58,12 @@ class Hand():
         draw_desc.init()
         draw_desc.opa = lv.OPA.COVER;
         draw_desc.color = obj.get_style_bg_color(lv.PART.MAIN)
-        draw_desc.width = 10
+        draw_desc.width = 4
         draw_desc.round_start = True
         draw_desc.round_end = True
         draw_ctx.line(draw_desc, self.main[0], self.main[1])
         if self.flag_rad != 0:
-            draw_desc.width = 20
+            draw_desc.width = 12
             draw_ctx.line(draw_desc, self.flag[0], self.flag[1])
 
     def rotate(self, by):
