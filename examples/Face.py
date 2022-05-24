@@ -1,10 +1,7 @@
 in_sim = False
 try:
     import display_driver
-    from display_driver_utils import driver
-    width = 480
-    height = 320
-    drv = driver(width, height)
+
     in_sim = True
 except ImportError:
     pass
@@ -82,6 +79,7 @@ def get_member_name(obj, value):
 # A class that describes a clock Face
 # An instance of this class can be used to create clock Faces
 ##############################################################################
+from Hand import Hand
 
 class FaceClass():
 
@@ -115,6 +113,8 @@ class FaceClass():
         self.card_font = None
         self.card_points = []
         self.sub_card_points = []
+        self.hour = Hand()
+        self.minute = Hand()
 
     def create(self, parent):
         # Create LVGL object from class
@@ -198,6 +198,8 @@ class FaceClass():
             draw_ctx.line(draw_desc, line[0], line[1])
         for line in self.sub_card_points:
             draw_ctx.line(draw_desc, line[0], line[1])
+        self.hour.draw(obj, draw_ctx, 60)
+        self.minute.draw(obj, draw_ctx, 300)
 
     CARDINALS = 4
     HOURS = 12
@@ -205,6 +207,7 @@ class FaceClass():
     def set_coords(self, obj):
         x = obj.get_x() + int(self.lv_cls.width_def // 2)
         y = obj.get_y() + int(self.lv_cls.height_def // 2)
+        self.card_points.clear()
         rotation = 0
         for i in range(FaceClass.CARDINALS):
             self.card_points.append([
@@ -214,6 +217,7 @@ class FaceClass():
                  'y': y + int(math.cos(math.radians(rotation)) * (self.cardinal_rad - self.cardinal_len))},
             ])
             rotation += 90
+        self.sub_card_points.clear()
         rotation = 0
         for i in range(FaceClass.HOURS):
             rotation += 30
@@ -224,6 +228,8 @@ class FaceClass():
                 {'x': x + int(math.sin(math.radians(rotation)) * (self.sub_card_rad - self.sub_card_len)),
                  'y': y + int(math.cos(math.radians(rotation)) * (self.sub_card_rad - self.sub_card_len))},
             ])
+        self.hour.set_coords(x, y)
+        self.minute.set_coords(x,y)
 
 
 ##############################################################################
@@ -374,9 +380,8 @@ def event_cb(e):
 for widget in [customWidget]:
     widget.add_event_cb(event_cb, lv.EVENT.CLICKED, None)
 
-if not in_sim:
-    while True:
-        touch.read()
-        lv.task_handler()
-        lv.tick_inc(50)
-        time.sleep_ms(50)
+while True:
+    touch.read()
+    lv.task_handler()
+    lv.tick_inc(50)
+    time.sleep_ms(50)
