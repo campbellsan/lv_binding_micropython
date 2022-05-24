@@ -113,8 +113,8 @@ class FaceClass():
         self.card_font = None
         self.card_points = []
         self.sub_card_points = []
-        self.hour = Hand()
-        self.minute = Hand()
+        self.hour = Hand(main_rad=90, main_tail_rad=15, flag_rad=25, flag_end_rad=90)
+        self.minute = Hand(main_rad=125, main_tail_rad=15, flag_rad=25, flag_end_rad=125)
 
     def create(self, parent):
         # Create LVGL object from class
