@@ -30,6 +30,21 @@ except ImportError:
 # easily shown with ASCII art.
 # The above __init__ parameters allow the look of the Face to be customised
 # in many ways.
+#
+# To do:
+# x Draw spindle
+# - Set digit font Cardinal and Subcardinal
+# x Set hand widths and colours
+# x Add seconds
+# - Add date display
+# - Measure memory usage
+# - Read settings from file
+# - Add alarm on/off and settings buttons
+# - Add settings editor
+# - Implement wake-up light
+# - Implement audio
+# - Read time in simulator
+# x Add sub-second support
 
 class FacePart:
     FACE_UNKNOWN = 0
@@ -50,6 +65,7 @@ sys.path.append('')  # See: https://github.com/micropython/micropython/issues/64
 import lvgl as lv
 import lv_colors as colors
 import math
+import utime as time
 
 lv.init()
 
@@ -113,8 +129,16 @@ class FaceClass():
         self.card_font = None
         self.card_points = []
         self.sub_card_points = []
+        self.localtime = (1970, 1, 1, 22, 9, 26, 1, 1)
+        self.lastsync = time.ticks_ms()
+        self.FRACTIONALTIMEZERO = time.ticks_diff(self.lastsync, self.lastsync)
+        self.fractionaltime = self.FRACTIONALTIMEZERO
         self.hour = Hand(main_rad=90, main_tail_rad=15, flag_rad=25, flag_end_rad=90)
+        self.hour.flag_width = 14
+        self.hour.spindle_rad = 8
         self.minute = Hand(main_rad=125, main_tail_rad=15, flag_rad=25, flag_end_rad=125)
+        self.second = Hand(main_rad=155, main_tail_rad=15)
+        self.second.color = colors.lv_colors.RED
 
     def create(self, parent):
         # Create LVGL object from class
@@ -144,7 +168,7 @@ class FaceClass():
         code = e.get_code()
         obj = e.get_target()
 
-        # print("Event %s" % get_member_name(lv.EVENT, code))
+        #print("Event %s" % get_member_name(lv.EVENT, code))
 
         if code == lv.EVENT.DRAW_MAIN:
             # Draw the widget
@@ -158,6 +182,8 @@ class FaceClass():
             lv.EVENT.LAYOUT_CHANGED]:
             # Check if need to recalculate widget parameters
             obj.valid = False
+        elif code == lv.EVENT.REFRESH:
+            obj.invalidate()
 
     def calc(self, obj):
         # Calculate object parameters
@@ -198,8 +224,14 @@ class FaceClass():
             draw_ctx.line(draw_desc, line[0], line[1])
         for line in self.sub_card_points:
             draw_ctx.line(draw_desc, line[0], line[1])
-        self.hour.draw(obj, draw_ctx, 60)
-        self.minute.draw(obj, draw_ctx, 300)
+        if not in_sim:
+            self.synchronise()
+        sec_rot = (self.localtime[5] * 6) + (6 * (self.fractionaltime/1000))
+        min_rot = (self.localtime[4] * 6) + (sec_rot / 60)
+        hr_rot = ((self.localtime[3] * 30) % 360) + (min_rot / 12)
+        self.hour.draw(obj, draw_ctx, 360 - hr_rot)
+        self.minute.draw(obj, draw_ctx, 360 - min_rot)
+        self.second.draw(obj, draw_ctx, 360 - sec_rot)
 
     CARDINALS = 4
     HOURS = 12
@@ -229,9 +261,19 @@ class FaceClass():
                  'y': y + int(math.cos(math.radians(rotation)) * (self.sub_card_rad - self.sub_card_len))},
             ])
         self.hour.set_coords(x, y)
-        self.minute.set_coords(x,y)
+        self.minute.set_coords(x, y)
+        self.second.set_coords(x, y)
 
-
+    def synchronise(self):
+        lastsec = self.localtime[5]
+        self.localtime = time.localtime()
+        fraction = time.ticks_ms()
+        if lastsec != self.localtime[5]:
+            self.fractionaltime = self.FRACTIONALTIMEZERO
+        else:
+            self.fractionaltime = time.ticks_add(self.fractionaltime, time.ticks_diff(fraction, self.lastsync))
+        self.lastsync = fraction
+        
 ##############################################################################
 # A Python class to wrap the LVGL custom widget
 ##############################################################################
@@ -366,19 +408,17 @@ scr.set_flex_flow(lv.FLEX_FLOW.COLUMN)
 scr.set_flex_align(lv.FLEX_ALIGN.SPACE_EVENLY, lv.FLEX_ALIGN.CENTER, lv.FLEX_ALIGN.CENTER)
 
 # Add a custom widget with a label
-customWidget = Face(scr)
+face = Face(scr)
 
-
-# l2 = lv.label(customWidget)
+# l2 = lv.label(face)
 # l2.set_text("Click me!")
 
-# Add click events to both button and custom widget
+# Add click events to custom widget
 def event_cb(e):
     print("%s Clicked!" % repr(e.get_target()))
 
 
-for widget in [customWidget]:
-    widget.add_event_cb(event_cb, lv.EVENT.CLICKED, None)
+face.add_event_cb(event_cb, lv.EVENT.CLICKED, None)
 
 if not in_sim:
     while True:
@@ -386,3 +426,5 @@ if not in_sim:
         lv.task_handler()
         lv.tick_inc(50)
         time.sleep_ms(50)
+        lv.event_send(face, lv.EVENT.REFRESH, None)
+        

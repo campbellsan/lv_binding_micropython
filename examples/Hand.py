@@ -48,6 +48,9 @@ class Hand():
         self.flag_rad = flag_rad
         self.flag_end_rad = flag_end_rad
         self.main_rad = main_rad
+        self.main_width = 4
+        self.flag_width = 12
+        self.color = None
         self.spindle = {'x': x, 'y': y}
         self.main = [{'x': 0, 'y': 0}, {'x': 0, 'y': 0}]
         self.flag = [{'x': 0, 'y': 0}, {'x': 0, 'y': 0}]
@@ -57,14 +60,19 @@ class Hand():
         draw_desc = lv.draw_line_dsc_t()
         draw_desc.init()
         draw_desc.opa = lv.OPA.COVER;
-        draw_desc.color = obj.get_style_bg_color(lv.PART.MAIN)
-        draw_desc.width = 4
+        if self.color == None:
+            draw_desc.color = obj.get_style_bg_color(lv.PART.MAIN)
+        else:
+            draw_desc.color = self.color
+        draw_desc.width = self.main_width
         draw_desc.round_start = True
         draw_desc.round_end = True
         draw_ctx.line(draw_desc, self.main[0], self.main[1])
         if self.flag_rad != 0:
-            draw_desc.width = 12
+            draw_desc.width = self.flag_width
             draw_ctx.line(draw_desc, self.flag[0], self.flag[1])
+        draw_desc.width = self.spindle_rad * 2
+        draw_ctx.line(draw_desc, self.spindle, {'x':self.spindle['x'] + 1, 'y':self.spindle['y'] + 1})       
 
     def rotate(self, by):
         self.main[0] = {'x': self.spindle['x'] - int(math.sin(math.radians(by)) * self.main_tail_rad),
@@ -79,3 +87,4 @@ class Hand():
 
     def set_coords(self, x, y):
         self.spindle = {'x': x, 'y': y}
+
