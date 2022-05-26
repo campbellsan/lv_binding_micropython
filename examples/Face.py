@@ -174,6 +174,14 @@ class FaceClass():
             # Draw the widget
             draw_ctx = e.get_draw_ctx()
             self.draw(obj, draw_ctx)
+        elif code == lv.EVENT.DRAW_POST:
+            # Draw the widget
+            draw_ctx = e.get_draw_ctx()
+            self.draw_hands(obj, draw_ctx)
+        if code == lv.EVENT.DRAW_MAIN:
+            # Draw the widget
+            draw_ctx = e.get_draw_ctx()
+            self.draw(obj, draw_ctx)
         elif code in [
             lv.EVENT.STYLE_CHANGED,
             lv.EVENT.VALUE_CHANGED,
@@ -224,6 +232,8 @@ class FaceClass():
             draw_ctx.line(draw_desc, line[0], line[1])
         for line in self.sub_card_points:
             draw_ctx.line(draw_desc, line[0], line[1])
+
+    def draw_hands(self, obj, draw_ctx):
         if not in_sim:
             self.synchronise()
         sec_rot = (self.localtime[5] * 6) + (6 * (self.fractionaltime/1000))
@@ -328,10 +338,10 @@ class FaceTheme(lv.theme_t):
             self.set_bg_color(lv.palette_main(lv.PALETTE.GREY));
 
             # Child elements are centered
-            self.set_layout(lv.LAYOUT_FLEX.value);
-            self.set_flex_main_place(lv.FLEX_ALIGN.CENTER);
-            self.set_flex_cross_place(lv.FLEX_ALIGN.CENTER);
-            self.set_flex_track_place(lv.FLEX_ALIGN.CENTER);
+            #self.set_layout(lv.LAYOUT_FLEX.value);
+            #self.set_flex_main_place(lv.FLEX_ALIGN.CENTER);
+            #self.set_flex_cross_place(lv.FLEX_ALIGN.CENTER);
+            #self.set_flex_track_place(lv.FLEX_ALIGN.CENTER);
 
     class PressedStyle(lv.style_t):
         def __init__(self):
@@ -404,14 +414,23 @@ theme = FaceTheme()
 
 # Create a screen with flex layout
 scr = lv.scr_act()
-scr.set_flex_flow(lv.FLEX_FLOW.COLUMN)
-scr.set_flex_align(lv.FLEX_ALIGN.SPACE_EVENLY, lv.FLEX_ALIGN.CENTER, lv.FLEX_ALIGN.CENTER)
+#scr.set_flex_flow(lv.FLEX_FLOW.COLUMN)
+#scr.set_flex_align(lv.FLEX_ALIGN.SPACE_EVENLY, lv.FLEX_ALIGN.CENTER, lv.FLEX_ALIGN.CENTER)
 
 # Add a custom widget with a label
 face = Face(scr)
-
-# l2 = lv.label(face)
-# l2.set_text("Click me!")
+face.align(lv.ALIGN.CENTER, 0, 0)
+#face.set_flex_align(lv.FLEX_ALIGN.END, lv.FLEX_ALIGN.CENTER, lv.FLEX_ALIGN.CENTER)
+#face.remove_style(lv.PART.MAIN, lv.FLEX_FLOW)
+#face.set_layout(lv.LAYOUT_GRID.value);
+date_style = lv.style_t()
+date_style.init()
+date_style.set_text_font(lv.font_montserrat_28)
+l2 = lv.label(face)
+l2.add_style(date_style, lv.STATE.DEFAULT)
+l2.set_text("Thu 26 May")
+l2.align(lv.ALIGN.CENTER, 0, 75)
+l2.set_align(lv.ALIGN.CENTER)
 
 # Add click events to custom widget
 def event_cb(e):
@@ -428,3 +447,4 @@ if not in_sim:
         time.sleep_ms(50)
         lv.event_send(face, lv.EVENT.REFRESH, None)
         
+
