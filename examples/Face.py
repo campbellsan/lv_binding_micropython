@@ -387,8 +387,8 @@ else:
     display = ili9486.display(wr=14, rd=12, rst=13, cs=27, dc=28, d0=15, backlight=11)
     display.init()
     draw_buf = lv.disp_draw_buf_t()
-    buf1_1 = bytearray(480 * 32)
-    buf1_2 = bytearray(480 * 32)
+    buf1_1 = bytearray(480 * 64)
+    buf1_2 = bytearray(480 * 64)
     size = len(buf1_1) // 2
     draw_buf.init(buf1_1, buf1_2, size)
     disp_drv = lv.disp_drv_t()
@@ -418,14 +418,27 @@ scr = lv.scr_act()
 #scr.set_flex_align(lv.FLEX_ALIGN.SPACE_EVENLY, lv.FLEX_ALIGN.CENTER, lv.FLEX_ALIGN.CENTER)
 
 # Add a custom widget with a label
+scr_style = lv.style_t()
+scr_style.init()
+scr_style.set_bg_color(colors.lv_colors.BLACK)
+scr.add_style(scr_style, lv.STATE.DEFAULT)
+
 face = Face(scr)
 face.align(lv.ALIGN.CENTER, 0, 0)
+face_style = lv.style_t()
+face_style.init()
+face_style.set_bg_color(colors.lv_colors.WHITE)
+face.add_style(face_style, lv.STATE.DEFAULT)
 #face.set_flex_align(lv.FLEX_ALIGN.END, lv.FLEX_ALIGN.CENTER, lv.FLEX_ALIGN.CENTER)
 #face.remove_style(lv.PART.MAIN, lv.FLEX_FLOW)
 #face.set_layout(lv.LAYOUT_GRID.value);
 date_style = lv.style_t()
 date_style.init()
-date_style.set_text_font(lv.font_montserrat_28)
+if not in_sim:
+    date_style.set_text_font(lv.font_montserrat_28)
+else:
+    date_style.set_text_font(lv.font_montserrat_16)  # sim doesn't have additional fonts
+date_style.set_text_color(lv.color_make(0xff,0xff,0xa0))
 l2 = lv.label(face)
 l2.add_style(date_style, lv.STATE.DEFAULT)
 l2.set_text("Thu 26 May")
@@ -447,4 +460,3 @@ if not in_sim:
         time.sleep_ms(50)
         lv.event_send(face, lv.EVENT.REFRESH, None)
         
-
