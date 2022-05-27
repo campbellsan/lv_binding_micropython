@@ -295,7 +295,11 @@ class FaceClass():
         else:
             self.fractionaltime = time.ticks_add(self.fractionaltime, time.ticks_diff(fraction, self.lastsync))
         self.lastsync = fraction
-        
+        date_str = ("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")[(self.localtime[6] + 1) % 8] # rp2 bug?
+        date_str += " " + str(self.localtime[2]) + " "
+        date_str += ("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")[self.localtime[1]]
+        self.date.set_text(date_str)
+
 ##############################################################################
 # A Python class to wrap the LVGL custom widget
 ##############################################################################
