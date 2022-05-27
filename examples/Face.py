@@ -154,7 +154,19 @@ class FaceClass():
         obj.add_flag(obj.FLAG.CLICKABLE);
         obj.add_flag(obj.FLAG.CHECKABLE);
         obj.add_flag(obj.FLAG.SCROLL_ON_FOCUS);
-        # print("Constructor called!")
+        date_style = lv.style_t()
+        date_style.init()
+        if not in_sim:
+            date_style.set_text_font(lv.font_montserrat_28)
+        else:
+            date_style.set_text_font(lv.font_montserrat_16)  # sim doesn't have additional fonts
+        date_style.set_text_color(lv.color_make(0xff,0xff,0xa0))
+        self.date = lv.label(obj.lv_obj)
+        self.date.add_style(date_style, lv.STATE.DEFAULT)
+        self.date.set_text("Thu 26 May")
+        self.date.align(lv.ALIGN.CENTER, 0, 75)
+        self.date.set_align(lv.ALIGN.CENTER)
+        #print("Constructor called!")
 
     def destructor(self, lv_cls, obj):
         pass
@@ -432,18 +444,6 @@ face.add_style(face_style, lv.STATE.DEFAULT)
 #face.set_flex_align(lv.FLEX_ALIGN.END, lv.FLEX_ALIGN.CENTER, lv.FLEX_ALIGN.CENTER)
 #face.remove_style(lv.PART.MAIN, lv.FLEX_FLOW)
 #face.set_layout(lv.LAYOUT_GRID.value);
-date_style = lv.style_t()
-date_style.init()
-if not in_sim:
-    date_style.set_text_font(lv.font_montserrat_28)
-else:
-    date_style.set_text_font(lv.font_montserrat_16)  # sim doesn't have additional fonts
-date_style.set_text_color(lv.color_make(0xff,0xff,0xa0))
-l2 = lv.label(face)
-l2.add_style(date_style, lv.STATE.DEFAULT)
-l2.set_text("Thu 26 May")
-l2.align(lv.ALIGN.CENTER, 0, 75)
-l2.set_align(lv.ALIGN.CENTER)
 
 # Add click events to custom widget
 def event_cb(e):
@@ -459,4 +459,3 @@ if not in_sim:
         lv.tick_inc(50)
         time.sleep_ms(50)
         lv.event_send(face, lv.EVENT.REFRESH, None)
-        
