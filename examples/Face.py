@@ -490,7 +490,7 @@ settings_style.init()
 if not in_sim:
     settings_style.set_text_font(lv.font_montserrat_28)
 else:
-    settings_ctl_style.set_text_font(lv.font_montserrat_16)
+    settings_style.set_text_font(lv.font_montserrat_16)
 settings_style.set_text_color(colors.lv_colors.WHITE)
 settings_style.set_text_opa(lv.OPA._40)
 settings_style.set_pad_top(10)
