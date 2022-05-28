@@ -33,15 +33,17 @@ except ImportError:
 #
 # To do:
 # x Draw spindle
-# - Set digit font Cardinal and Subcardinal
+# x Set digit font Cardinal and Subcardinal
 # x Set hand widths and colours
 # x Add seconds
-# - Add date display
-# - Measure memory usage
+# x Add date display
+# x Measure memory usage
 # - Read settings from file
 # - Add alarm on/off and settings buttons
 # - Add settings editor
+# - Implement RTC setting from NTP
 # - Implement wake-up light
+# - Fade backlight by ambient
 # - Implement audio
 # - Read time in simulator
 # x Add sub-second support
@@ -117,16 +119,20 @@ class FaceClass():
         self.inner_dial_rad = 0
         self.digit_rad = 0
         self.div_len = 0
-        self.sub_card_len = 1
-        self.cardinal_len = 9
+        self.sub_card_len = 4
+        self.cardinal_len = 12
+        self.sub_card_font = None
+        if not in_sim:
+            self.card_font = lv.font_montserrat_48
+        else:
+            self.card_font = lv.font_montserrat_16
+        self.cardinal_labels = []
         self.div_rounded = True
         self.sub_card_rounded = True
         self.cardinal_rounded = True
         self.div_col = colors.lv_colors.BLACK
         self.sub_card_col = colors.lv_colors.BLACK
         self.cardinal_col = colors.lv_colors.BLACK
-        self.sub_card_font = None
-        self.card_font = None
         self.card_points = []
         self.sub_card_points = []
         self.localtime = (1970, 1, 1, 22, 9, 26, 1, 1)
@@ -139,6 +145,7 @@ class FaceClass():
         self.minute = Hand(main_rad=125, main_tail_rad=15, flag_rad=25, flag_end_rad=125)
         self.second = Hand(main_rad=155, main_tail_rad=15)
         self.second.color = colors.lv_colors.RED
+        #print("init complete!")
 
     def create(self, parent):
         # Create LVGL object from class
@@ -160,13 +167,28 @@ class FaceClass():
             date_style.set_text_font(lv.font_montserrat_28)
         else:
             date_style.set_text_font(lv.font_montserrat_16)  # sim doesn't have additional fonts
-        date_style.set_text_color(lv.color_make(0xff,0xff,0xa0))
+        date_style.set_text_color(lv.color_make(0xff,0xff,0x90))
         self.date = lv.label(obj.lv_obj)
         self.date.add_style(date_style, lv.STATE.DEFAULT)
         self.date.set_text("Thu 26 May")
         self.date.align(lv.ALIGN.CENTER, 0, 75)
         self.date.set_align(lv.ALIGN.CENTER)
+        if self.card_font != None:
+            self.init_cardinal_labels(obj)
         #print("Constructor called!")
+    
+    def init_cardinal_labels(self, obj):
+        cardinals = ("6", "3", "12", "9")
+        lbl_style = lv.style_t()
+        lbl_style.init()
+        lbl_style.set_text_font(self.card_font)
+        lbl_style.set_text_color(colors.lv_colors.WHITE)
+        for cardinal in cardinals:
+            lbl = lv.label(obj.lv_obj)
+            lbl.set_text(cardinal)
+            lbl.add_style(lbl_style, lv.STATE.DEFAULT)
+            self.cardinal_labels.append(lbl)
+        #print("Cardinal labels initialised!")
 
     def destructor(self, lv_cls, obj):
         pass
@@ -240,10 +262,11 @@ class FaceClass():
         draw_desc.width = 10
         draw_desc.round_start = True
         draw_desc.round_end = True
-        for line in self.card_points:
-            draw_ctx.line(draw_desc, line[0], line[1])
         for line in self.sub_card_points:
             draw_ctx.line(draw_desc, line[0], line[1])
+        if self.card_font == None:
+            for line in self.card_points:
+                draw_ctx.line(draw_desc, line[0], line[1])
 
     def draw_hands(self, obj, draw_ctx):
         if not in_sim:
@@ -285,6 +308,13 @@ class FaceClass():
         self.hour.set_coords(x, y)
         self.minute.set_coords(x, y)
         self.second.set_coords(x, y)
+        if self.card_font != None:
+            centre_x = obj.get_x() + int(self.lv_cls.width_def // 2)
+            centre_y = obj.get_y() + int(self.lv_cls.height_def // 2)
+            for line, label in list(zip(self.card_points, self.cardinal_labels)):
+                x = line[1]['x'] - centre_x
+                y =line[1]['y'] - centre_y
+                label.align(lv.ALIGN.CENTER, x, y)
 
     def synchronise(self):
         lastsec = self.localtime[5]
@@ -297,7 +327,7 @@ class FaceClass():
         self.lastsync = fraction
         date_str = ("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")[(self.localtime[6] + 1) % 8] # rp2 bug?
         date_str += " " + str(self.localtime[2]) + " "
-        date_str += ("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")[self.localtime[1]]
+        date_str += ("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")[self.localtime[1] - 1]
         self.date.set_text(date_str)
 
 ##############################################################################
@@ -453,13 +483,31 @@ face.add_style(face_style, lv.STATE.DEFAULT)
 def event_cb(e):
     print("%s Clicked!" % repr(e.get_target()))
 
-
 face.add_event_cb(event_cb, lv.EVENT.CLICKED, None)
+
+def free(full=False):
+  gc.collect()
+  F = gc.mem_free()
+  A = gc.mem_alloc()
+  T = F+A
+  P = '{0:.2f}%'.format(F/T*100)
+  if not full: return P
+  else : return ('Total:{0} Free:{1} ({2})'.format(T,F,P))
+
+def df():
+  s = os.statvfs('//')
+  return ('{0} KB'.format((s[0]*s[3])/1024))
+
+import gc
+import os
+print(free(True))
+print(df())
 
 if not in_sim:
     while True:
         touch.read()
         lv.task_handler()
-        lv.tick_inc(50)
-        time.sleep_ms(50)
+        lv.tick_inc(40)
+        time.sleep_ms(40)
         lv.event_send(face, lv.EVENT.REFRESH, None)
+
