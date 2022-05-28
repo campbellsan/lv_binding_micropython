@@ -1,11 +1,9 @@
 in_sim = False
 try:
     import display_driver
-
     in_sim = True
 except ImportError:
     pass
-
 
 ##############################################################################
 # LVGL Face Widget
@@ -458,16 +456,79 @@ else:
 # Create the theme for the custom widget
 theme = FaceTheme()
 
-# Create a screen with flex layout
+# Create a screen
 scr = lv.scr_act()
-#scr.set_flex_flow(lv.FLEX_FLOW.COLUMN)
-#scr.set_flex_align(lv.FLEX_ALIGN.SPACE_EVENLY, lv.FLEX_ALIGN.CENTER, lv.FLEX_ALIGN.CENTER)
-
-# Add a custom widget with a label
 scr_style = lv.style_t()
 scr_style.init()
 scr_style.set_bg_color(colors.lv_colors.BLACK)
 scr.add_style(scr_style, lv.STATE.DEFAULT)
+
+# Add an alarm enable button
+alarm_ctl = lv.label(scr)
+alarm_ctl.set_text(lv.SYMBOL.BELL)
+alarm_ctl_style = lv.style_t()
+alarm_ctl_style.init()
+alarm_ctl_style.set_text_font(lv.font_montserrat_28)
+alarm_ctl_style.set_text_color(colors.lv_colors.WHITE)
+alarm_ctl_style.set_text_opa(lv.OPA._40)
+alarm_ctl_style.set_pad_top(10)
+alarm_ctl_style.set_pad_left(10)
+alarm_ctl.add_style(alarm_ctl_style, lv.STATE.DEFAULT)
+alarm_ctl_pressed_style = lv.style_t()
+alarm_ctl_pressed_style.set_text_opa(lv.OPA._70)
+alarm_ctl.add_style(alarm_ctl_pressed_style, lv.STATE.PRESSED)
+alarm_ctl.add_flag(lv.obj.FLAG.CLICKABLE);
+
+# Add a settings button
+settings = lv.label(scr)
+settings.set_text(lv.SYMBOL.SETTINGS)
+settings_style = lv.style_t()
+settings_style.init()
+settings_style.set_text_font(lv.font_montserrat_28)
+settings_style.set_text_color(colors.lv_colors.WHITE)
+settings_style.set_text_opa(lv.OPA._40)
+settings_style.set_pad_top(10)
+settings_style.set_pad_right(10)
+settings.add_style(alarm_ctl_style, lv.STATE.DEFAULT)
+settings_pressed_style = lv.style_t()
+settings_pressed_style.set_text_opa(lv.OPA._70)
+settings.add_style(alarm_ctl_pressed_style, lv.STATE.PRESSED)
+settings.add_flag(lv.obj.FLAG.CLICKABLE);
+settings.align(lv.ALIGN.TOP_RIGHT, -10, 0)
+
+# Add a music button
+music = lv.label(scr)
+music.set_text(lv.SYMBOL.AUDIO)
+music_style = lv.style_t()
+music_style.init()
+music_style.set_text_font(lv.font_montserrat_28)
+music_style.set_text_color(colors.lv_colors.WHITE)
+music_style.set_text_opa(lv.OPA._40)
+music_style.set_pad_bottom(10)
+music_style.set_pad_left(10)
+music.add_style(alarm_ctl_style, lv.STATE.DEFAULT)
+music_pressed_style = lv.style_t()
+music_pressed_style.set_text_opa(lv.OPA._70)
+music.add_style(alarm_ctl_pressed_style, lv.STATE.PRESSED)
+music.add_flag(lv.obj.FLAG.CLICKABLE);
+music.align(lv.ALIGN.BOTTOM_LEFT, 0, -10)
+
+# Add a volume button
+volume = lv.label(scr)
+volume.set_text(lv.SYMBOL.VOLUME_MID)
+volume_style = lv.style_t()
+volume_style.init()
+volume_style.set_text_font(lv.font_montserrat_28)
+volume_style.set_text_color(colors.lv_colors.WHITE)
+volume_style.set_text_opa(lv.OPA._40)
+volume_style.set_pad_bottom(10)
+volume_style.set_pad_left(10)
+volume.add_style(alarm_ctl_style, lv.STATE.DEFAULT)
+volume_pressed_style = lv.style_t()
+volume_pressed_style.set_text_opa(lv.OPA._70)
+volume.add_style(alarm_ctl_pressed_style, lv.STATE.PRESSED)
+volume.add_flag(lv.obj.FLAG.CLICKABLE);
+volume.align(lv.ALIGN.BOTTOM_RIGHT, -10, -10)
 
 face = Face(scr)
 face.align(lv.ALIGN.CENTER, 0, 0)
@@ -475,14 +536,15 @@ face_style = lv.style_t()
 face_style.init()
 face_style.set_bg_color(colors.lv_colors.WHITE)
 face.add_style(face_style, lv.STATE.DEFAULT)
-#face.set_flex_align(lv.FLEX_ALIGN.END, lv.FLEX_ALIGN.CENTER, lv.FLEX_ALIGN.CENTER)
-#face.remove_style(lv.PART.MAIN, lv.FLEX_FLOW)
-#face.set_layout(lv.LAYOUT_GRID.value);
 
 # Add click events to custom widget
 def event_cb(e):
     print("%s Clicked!" % repr(e.get_target()))
 
+alarm_ctl.add_event_cb(event_cb, lv.EVENT.CLICKED, None)
+settings.add_event_cb(event_cb, lv.EVENT.CLICKED, None)
+music.add_event_cb(event_cb, lv.EVENT.CLICKED, None)
+volume.add_event_cb(event_cb, lv.EVENT.CLICKED, None)
 face.add_event_cb(event_cb, lv.EVENT.CLICKED, None)
 
 def free(full=False):
