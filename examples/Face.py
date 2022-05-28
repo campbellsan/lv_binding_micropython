@@ -16,10 +16,10 @@ except ImportError:
 # Face anatomy - ASCII art shows a typical right hand half of a face:
 #
 #   12  <----------  Cardinal
-#        .  <------  SubCardinal
-#           .  <---  SubCardinal
-#    O       3 <---  Cardinal
-#           .
+#    |   .  <------  SubCardinal
+#    |      .  <---  SubCardinal
+#   -O-===== 3 <---  Cardinal
+#        ^---------  Hand (see Hand.py)
 #        .
 #    6
 #    <------->       Dial radius
@@ -41,7 +41,7 @@ except ImportError:
 # - Add settings editor
 # - Implement RTC setting from NTP
 # - Implement wake-up light
-# - Fade backlight by ambient
+# x Fade backlight by ambient
 # - Implement audio
 # - Read time in simulator
 # x Add sub-second support
@@ -421,6 +421,7 @@ class FaceTheme(lv.theme_t):
 ##############################################################################
 # Main program - create screen and widgets
 ##############################################################################
+display = None
 if in_sim:
     import utime as time
 else:
@@ -521,12 +522,15 @@ def df():
   return ('Flash FS Free: {0} KB'.format((s[0]*s[3])/1024))
 
 if not in_sim:
-    import gc
-    import os
+    import gc, os
+    from machine import ADC, Pin
+
+    adc = ADC(Pin(26))
     print(free(True))
     print(df())
 
     while True:
+        display.backlight(adc.read_u16())
         touch.read()
         lv.task_handler()
         lv.tick_inc(40)
