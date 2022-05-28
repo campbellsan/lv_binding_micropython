@@ -492,22 +492,24 @@ def free(full=False):
   T = F+A
   P = '{0:.2f}%'.format(F/T*100)
   if not full: return P
-  else : return ('Total:{0} Free:{1} ({2})'.format(T,F,P))
+  else : return ('SRAM Total:{0} Free:{1} ({2})'.format(T,F,P))
 
 def df():
   s = os.statvfs('//')
-  return ('{0} KB'.format((s[0]*s[3])/1024))
-
-import gc
-import os
-print(free(True))
-print(df())
+  return ('Flash FS Free: {0} KB'.format((s[0]*s[3])/1024))
 
 if not in_sim:
+    import gc
+    import os
+    print(free(True))
+    print(df())
+
     while True:
         touch.read()
         lv.task_handler()
         lv.tick_inc(40)
         time.sleep_ms(40)
         lv.event_send(face, lv.EVENT.REFRESH, None)
+
+
 
