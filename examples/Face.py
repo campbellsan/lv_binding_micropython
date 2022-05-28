@@ -13,14 +13,14 @@ except ImportError:
 #                                Uses Hand class instances rotated at
 #                                different angles to show the time.
 #
-# Face anatomy - ASCII art shows a typical right hand half of a face:
+# Face anatomy - ASCII art shows a typical right hand half of a clock face:
 #
 #   12  <----------  Cardinal
-#    |   .  <------  SubCardinal
+#    |    . <------  SubCardinal
 #    |      .  <---  SubCardinal
 #   -O-===== 3 <---  Cardinal
 #        ^---------  Hand (see Hand.py)
-#        .
+#         .
 #    6
 #    <------->       Dial radius
 #
