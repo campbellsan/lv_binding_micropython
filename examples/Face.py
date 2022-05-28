@@ -37,7 +37,7 @@ except ImportError:
 # x Add date display
 # x Measure memory usage
 # - Read settings from file
-# - Add alarm on/off and settings buttons
+# x Add alarm on/off and settings buttons
 # - Add settings editor
 # - Implement RTC setting from NTP
 # - Implement wake-up light
@@ -468,7 +468,10 @@ alarm_ctl = lv.label(scr)
 alarm_ctl.set_text(lv.SYMBOL.BELL)
 alarm_ctl_style = lv.style_t()
 alarm_ctl_style.init()
-alarm_ctl_style.set_text_font(lv.font_montserrat_28)
+if not in_sim:
+    alarm_ctl_style.set_text_font(lv.font_montserrat_28)
+else:
+    alarm_ctl_style.set_text_font(lv.font_montserrat_16)
 alarm_ctl_style.set_text_color(colors.lv_colors.WHITE)
 alarm_ctl_style.set_text_opa(lv.OPA._40)
 alarm_ctl_style.set_pad_top(10)
@@ -484,7 +487,10 @@ settings = lv.label(scr)
 settings.set_text(lv.SYMBOL.SETTINGS)
 settings_style = lv.style_t()
 settings_style.init()
-settings_style.set_text_font(lv.font_montserrat_28)
+if not in_sim:
+    settings_style.set_text_font(lv.font_montserrat_28)
+else:
+    settings_ctl_style.set_text_font(lv.font_montserrat_16)
 settings_style.set_text_color(colors.lv_colors.WHITE)
 settings_style.set_text_opa(lv.OPA._40)
 settings_style.set_pad_top(10)
@@ -501,7 +507,10 @@ music = lv.label(scr)
 music.set_text(lv.SYMBOL.AUDIO)
 music_style = lv.style_t()
 music_style.init()
-music_style.set_text_font(lv.font_montserrat_28)
+if not in_sim:
+    music_style.set_text_font(lv.font_montserrat_28)
+else:
+    music_style.set_text_font(lv.font_montserrat_16)
 music_style.set_text_color(colors.lv_colors.WHITE)
 music_style.set_text_opa(lv.OPA._40)
 music_style.set_pad_bottom(10)
@@ -518,7 +527,10 @@ volume = lv.label(scr)
 volume.set_text(lv.SYMBOL.VOLUME_MID)
 volume_style = lv.style_t()
 volume_style.init()
-volume_style.set_text_font(lv.font_montserrat_28)
+if not in_sim:
+    volume_style.set_text_font(lv.font_montserrat_28)
+else:
+    volume_style.set_text_font(lv.font_montserrat_16)
 volume_style.set_text_color(colors.lv_colors.WHITE)
 volume_style.set_text_opa(lv.OPA._40)
 volume_style.set_pad_bottom(10)
