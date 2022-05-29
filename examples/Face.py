@@ -30,21 +30,16 @@ except ImportError:
 # in many ways.
 #
 # To do:
-# x Draw spindle
-# x Set digit font Cardinal and Subcardinal
-# x Set hand widths and colours
-# x Add seconds
-# x Add date display
-# x Measure memory usage
 # - Read settings from file
-# x Add alarm on/off and settings buttons
 # - Add settings editor
 # - Implement RTC setting from NTP
 # - Implement wake-up light
-# x Fade backlight by ambient
 # - Implement audio
 # - Read time in simulator
-# x Add sub-second support
+# - Auto start
+# - Handle ambient light level in Face
+# - Implement luminous paint
+# - Replace while true loop with event_loop util
 
 class FacePart:
     FACE_UNKNOWN = 0
@@ -322,7 +317,7 @@ class FaceClass():
         else:
             self.fractionaltime = time.ticks_add(self.fractionaltime, time.ticks_diff(fraction, self.lastsync))
         self.lastsync = fraction
-        date_str = ("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")[(self.localtime[6] + 1) % 8] # rp2 bug?
+        date_str = ("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")[(self.localtime[6] + 1) % 7] # rp2 bug?
         date_str += " " + str(self.localtime[2]) + " "
         date_str += ("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")[self.localtime[1] - 1]
         self.date.set_text(date_str)
@@ -481,6 +476,7 @@ def create_button(symbol, callback):
     btn.add_style(btn_pressed_style, lv.STATE.PRESSED)
     btn.add_flag(lv.obj.FLAG.CLICKABLE);
     btn.add_event_cb(callback, lv.EVENT.CLICKED, None)
+    btn.set_ext_click_area(10)
     return btn
 
 # Add click event callbacks to all widgets
